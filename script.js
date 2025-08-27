@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let audio; // For Rive event audio (tuyenngon.mp3)
+let musicAudio; // For 198.mp3 music
 let backgroundMusic; // For background music (background.mp3)
 let isMusicPlaying = false;
 
@@ -164,6 +165,55 @@ function onRiveEventReceived(riveEvent) {
                 audio.pause();
                 audio.currentTime = 0;
                 console.log('Audio stopped and reset');
+            }
+            break;
+
+        case "musicon":
+            // Stop background music when 198.mp3 starts
+            if (backgroundMusic && isMusicPlaying) {
+                backgroundMusic.pause();
+                const audioIcon = document.getElementById('audioIcon');
+                const audioButton = document.getElementById('audioToggle');
+                if (audioIcon) audioIcon.textContent = '🔇';
+                if (audioButton) audioButton.classList.add('muted');
+                isMusicPlaying = false;
+                console.log('Background music stopped for 198.mp3');
+            }
+
+            if (!musicAudio) {
+                musicAudio = new Audio('./198.mp3');
+                musicAudio.preload = 'auto';
+
+                musicAudio.addEventListener('loadstart', () => console.log('198.mp3 loading started'));
+                musicAudio.addEventListener('canplaythrough', () => console.log('198.mp3 can play through'));
+                musicAudio.addEventListener('error', (e) => console.error('198.mp3 error:', e));
+            }
+
+            musicAudio.play().catch(error => {
+                console.error('Error playing 198.mp3:', error);
+                console.log('198.mp3 readyState:', musicAudio.readyState);
+                console.log('198.mp3 networkState:', musicAudio.networkState);
+            });
+            break;
+
+        case "musicoff":
+            if (musicAudio) {
+                musicAudio.pause();
+                musicAudio.currentTime = 0;
+                console.log('198.mp3 stopped and reset');
+            }
+
+            // Resume background music when 198.mp3 stops
+            if (backgroundMusic && !isMusicPlaying) {
+                backgroundMusic.play().catch(error => {
+                    console.error('Error resuming background music:', error);
+                });
+                const audioIcon = document.getElementById('audioIcon');
+                const audioButton = document.getElementById('audioToggle');
+                if (audioIcon) audioIcon.textContent = '🔊';
+                if (audioButton) audioButton.classList.remove('muted');
+                isMusicPlaying = true;
+                console.log('Background music resumed after 198.mp3 stopped');
             }
             break;
 
